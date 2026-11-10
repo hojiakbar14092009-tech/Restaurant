@@ -1,0 +1,45 @@
+/* Design tokens — 60 / 30 / 10: espresso surfaces, ivory text, brass accent. Status colours are functional only. */
+:root {
+  --espresso-900: #14110f;
+  --espresso-800: #1e1a17;
+  --espresso-700: #2a2420;
+  --ivory: #efe6d8;
+  --ivory-dim: #b9ad9c; /* 7.9:1 on espresso-900 */
+  --brass: #b8925a;
+  --brass-bright: #d4b07a;
+
+  --status-red: #c0392b;
+  --status-amber: #e0a526;
+  --status-green: #2e9e6a;
+
+  --glass: rgba(20, 17, 15, 0.72);
+  --glass-strong: rgba(20, 17, 15, 0.9);
+  --line: rgba(184, 146, 90, 0.38);
+  --line-soft: rgba(239, 230, 216, 0.12);
+
+  --font-serif: 'Cormorant Garamond', 'Times New Roman', serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
+
+  --r-sm: 8px;
+  --r-md: 14px;
+  --r-pill: 999px;
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --fast: 160ms;
+  --med: 320ms;
+  --shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --fast: 1ms;
+    --med: 1ms;
+  }
+}
