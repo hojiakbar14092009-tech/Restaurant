@@ -80,7 +80,9 @@ export class DayNight {
       vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
       fragmentShader: `uniform vec3 color; uniform float opacity; varying vec2 vUv;
         void main(){
-          float a = opacity * pow(1.0 - vUv.y, 1.4) * smoothstep(0.0, 0.2, vUv.x) * smoothstep(1.0, 0.8, vUv.x);
+          // pow() of a negative base and smoothstep() with reversed edges are undefined in GLSL: on some GPUs
+          // they return NaN, and bloom then smears that one pixel into a fully black frame.
+          float a = opacity * pow(max(1.0 - vUv.y, 0.0), 1.4) * smoothstep(0.0, 0.2, vUv.x) * (1.0 - smoothstep(0.8, 1.0, vUv.x));
           gl_FragColor = vec4(color * a, 1.0);
           #include <tonemapping_fragment>
           #include <colorspace_fragment>

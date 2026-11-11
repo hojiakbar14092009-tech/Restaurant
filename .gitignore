@@ -3,3 +3,6 @@ dist
 scripts/.cache
 graphify-out
 .playwright-mcp
+
+.vercel
+.env*
