@@ -24,6 +24,9 @@ Measured (headless Chromium, Intel Iris Xe, 1920x870, medium, auto resolution 70
 - 1x ~35-40 fps, 12x with 32 people ~34 fps; worst frame 40-65 ms; light toggle 39-117 ms.
 - 60 fps is NOT reached on this GPU in that test.
 
+Decision 2026-11-11: sharpness over frame rate. Dynamic resolution removed; native resolution (SMAA stays high-only: it cost ~8 fps on Iris Xe).
+Black-frame flicker fixed (NaN in the light-shaft shader spread by bloom).
+
 Not done / next
 - Real-Chrome and phone measurements; mouse-look pointer lock and the touch joystick were not testable headless.
 - Normal maps / KTX2, marble rosette inlay, rugs: skipped.

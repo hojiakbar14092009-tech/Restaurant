@@ -56,7 +56,8 @@ Table colours: **red** reserved → **green** seated (brief) → **yellow** wait
 - Lights are never added, removed or hidden at runtime (that recompiles every shader and freezes the page); only
   their intensity changes. Keep it that way when editing `src/world/lighting.ts`.
 - The simulation runs in fixed 1/60 s steps (max 16 per frame), so 4× / 12× cost no extra rendering.
-- Integrated GPUs start on the medium preset; below 40 fps the render resolution drops (to 85 %, then 70 %).
+- The scene is always drawn at the screen's own resolution (device pixel ratio up to 2), never upscaled.
+  Integrated GPUs start on the medium preset; the preset only steps down if the device stays under 24 fps.
 - Close other tabs that show the site: every open copy renders the full 3D scene on the same GPU.
 
 ## Structure

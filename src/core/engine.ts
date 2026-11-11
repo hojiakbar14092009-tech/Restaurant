@@ -17,7 +17,7 @@ interface Preset {
 }
 export const PRESETS: Record<Quality, Preset> = {
   low: { pixelRatio: 1, shadows: 0, post: false, smaa: false },
-  medium: { pixelRatio: 1.25, shadows: 1024, post: true, smaa: false },
+  medium: { pixelRatio: 2, shadows: 1024, post: true, smaa: false }, // SMAA cost ~8 fps on integrated GPUs
   high: { pixelRatio: 2, shadows: 2048, post: true, smaa: true },
 };
 const ORDER: Quality[] = ['low', 'medium', 'high'];
@@ -52,8 +52,6 @@ export class Engine {
   readonly scene = new THREE.Scene();
   readonly camera = new THREE.PerspectiveCamera(50, 1, 0.08, 1200);
   quality: Quality = 'medium';
-  /** Dynamic resolution: the pixel ratio is scaled down before a whole preset is dropped. */
-  private dynScale = 1;
   bloom!: UnrealBloomPass;
   private composer: EffectComposer | null = null;
   private bokeh: BokehPass | null = null;
@@ -61,6 +59,7 @@ export class Engine {
   private qualityFns: ((q: Quality, p: Preset) => void)[] = [];
   private clock = new THREE.Clock();
   private slow = 0;
+  private settleUntil = 6;
   private frames = 0;
   /** Smoothed frames per second, for the debug panel and auto quality. */
   fps = 60;
@@ -133,7 +132,7 @@ export class Engine {
   resize() {
     const w = this.host.clientWidth || innerWidth;
     const h = this.host.clientHeight || innerHeight;
-    const pr = Math.min(devicePixelRatio, this.preset.pixelRatio) * this.dynScale;
+    const pr = Math.min(devicePixelRatio, this.preset.pixelRatio);
     this.renderer.setPixelRatio(pr);
     this.renderer.setSize(w, h);
     this.labels.setSize(w, h);
@@ -161,24 +160,21 @@ export class Engine {
   }
 
   /**
-   * Keeps the frame rate up on slower GPUs: below 40 fps for 2.5 s the render resolution drops a notch
-   * (twice at most); the preset itself only steps down if it is still under 24 fps after that. Never steps back up, so it cannot oscillate.
+   * Sharpness first: the scene is always drawn at the screen's own resolution (up to 2x), never upscaled.
+   * Only if the device cannot even hold 24 fps for a few seconds does the preset step down (fewer effects,
+   * same resolution). It never steps back up, so it cannot oscillate.
    */
   private autoQuality(raw: number) {
     if (raw <= 0 || document.hidden) return;
     this.fps += (1 / raw - this.fps) * 0.05;
-    if (++this.frames < 240) return; // let shaders compile and the intro settle first
-    this.slow = this.fps < 40 ? this.slow + raw : 0;
-    if (this.slow < 2.5 || new URLSearchParams(location.search).has('quality')) return;
-    this.slow = 0;
-    this.frames = 120;
+    this.frames++;
+    // Timed, not counted in frames: a device at 6 fps must not wait 40 s for help.
+    if (this.clock.elapsedTime < this.settleUntil) return; // let shaders compile and the intro settle first
+    this.slow = this.fps < 24 ? this.slow + raw : 0;
     const i = ORDER.indexOf(this.quality);
-    if (this.dynScale > 0.72) {
-      this.dynScale -= 0.15;
-      this.resize();
-    } else if (i > 0 && this.fps < 24) {
-      this.dynScale = 1;
-      this.setQuality(ORDER[i - 1]);
-    }
+    if (this.slow < 4 || i === 0 || new URLSearchParams(location.search).has('quality')) return;
+    this.slow = 0;
+    this.settleUntil = this.clock.elapsedTime + 3;
+    this.setQuality(ORDER[i - 1]);
   }
 }
